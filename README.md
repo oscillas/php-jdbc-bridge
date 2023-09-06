@@ -2,11 +2,12 @@
 
 The PHP-JDBC bridge is a service and library for allowing a PHP application
 to interface with a database for which only a JDBC driver exists. This is a
-fork of [PJBS](http://sourceforge.net/projects/pjbs/).
+fork of [JCotton1123's php-jdbc-bridge](https://github.com/JCotton1123/php-jdbc-bridge)
+which itself is a fork of [PJBS](http://sourceforge.net/projects/pjbs/).
 
 The java component runs as a service which accepts socket requests from 
 the PHP component allowing the transfer of request and response between PHP 
-and the JDBC database. 
+and the JDBC database.
 
 ## Requirements
 
