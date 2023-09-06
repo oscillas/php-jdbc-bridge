@@ -2,6 +2,21 @@
     "name": "oscillas/php-jdbc-bridge",
     "type": "library",
     "description": "PHP to JDBC bridge",
+    "license": "LGPL-2.0-only",
+    "authors": [
+        {
+            "name": "Lenny",
+            "email": "lenny@mondogrigio.cjb.net"
+        },
+        {
+            "name": "Jesse Cotton",
+            "homepage": "https://jessecotton.com"
+        },
+        {
+            "name": "Jacob Ray Gilman",
+            "email": "jacob@oscillas.com"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "PJBridge\\": "php/"
