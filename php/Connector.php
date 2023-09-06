@@ -1,6 +1,8 @@
 <?php
 
-class PJBridge
+namespace PJBridge;
+
+class Connector
 {
     private $sock;
     private $jdbc_enc;
