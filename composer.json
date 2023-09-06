@@ -18,6 +18,9 @@
             "email": "jacob@oscillas.com"
         }
     ],
+    "require": {
+        "php": ">=5.3"
+    },
     "autoload": {
         "psr-4": {
             "PJBridge\\": "php/"
