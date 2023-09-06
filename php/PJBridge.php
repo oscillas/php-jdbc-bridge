@@ -1,122 +1,120 @@
 <?php
 
-class PJBridge {
+class PJBridge
+{
+    private $sock;
+    private $jdbc_enc;
+    private $app_enc;
 
-	private $sock;
-        private $jdbc_enc;
-        private $app_enc;
+    public $last_search_length = 0;
 
-        public $last_search_length = 0;
+    function __construct($host = "localhost", $port = "4444", $jdbc_enc = "ascii", $app_enc = "ascii")
+    {
+        $this->sock = fsockopen($host, $port);
+        $this->jdbc_enc = $jdbc_enc;
+        $this->app_enc = $app_enc;
+    }
 
-	function __construct($host="localhost", $port="4444", $jdbc_enc="ascii", $app_enc="ascii") {
+    function __destruct()
+    {
+        fclose($this->sock);
+    }
 
-		$this->sock = fsockopen($host, $port);
-                $this->jdbc_enc = $jdbc_enc;
-                $this->app_enc = $app_enc;
- 	}
+    private function parse_reply()
+    {
+        $il = explode(' ', fgets($this->sock));
+        $ol = array();
 
-	function __destruct() {
-	
-		fclose($this->sock);
-	}
+        foreach ($il as $value)
+            $ol[] = iconv($this->jdbc_enc, $this->app_enc, base64_decode($value));
 
-	private function parse_reply() {
+        return $ol;
+    }
 
-		$il = explode(' ', fgets($this->sock));
-		$ol = array();
+    private function exchange($cmd_a)
+    {
+        $cmd_s = '';
 
-		foreach ($il as $value)
-			$ol[] = iconv($this->jdbc_enc, $this->app_enc, base64_decode($value));
+        foreach ($cmd_a as $tok)
+            $cmd_s .= base64_encode(iconv($this->app_enc, $this->jdbc_enc, $tok)) . ' ';
 
-		return $ol;
-	}
+        $cmd_s = substr($cmd_s, 0, -1) . "\n";
 
-	private function exchange($cmd_a) {
+        fwrite($this->sock, $cmd_s);
 
-		$cmd_s = '';
+        return $this->parse_reply();
+    }
 
-		foreach ($cmd_a as $tok)
-			$cmd_s .= base64_encode(iconv($this->app_enc, $this->jdbc_enc, $tok)).' ';
-		
-		$cmd_s = substr($cmd_s, 0, -1)."\n";
+    public function connect($url, $user, $pass)
+    {
+        $reply = $this->exchange(array('connect', $url, $user, $pass));
 
-		fwrite($this->sock, $cmd_s);
-		
-		return $this->parse_reply();
-	}
+        switch ($reply[0]) {
 
-	public function connect($url, $user, $pass) {
+            case 'ok':
+                return true;
 
-		$reply = $this->exchange(array('connect', $url, $user, $pass));
+            default:
+                return false;
+        }
+    }
 
-		switch ($reply[0]) {
+    public function exec($query)
+    {
+        $cmd_a = array('exec', $query);
 
-		case 'ok':
-			return true;
+        if (func_num_args() > 1) {
 
-		default:
-			return false;
-		}
-	}
+            $args = func_get_args();
 
-	public function exec($query) {
+            for ($i = 1; $i < func_num_args(); $i++)
+                $cmd_a[] = $args[$i];
+        }
 
-		$cmd_a = array('exec', $query);
+        $reply = $this->exchange($cmd_a);
 
-		if (func_num_args() > 1) {
-		
-			$args = func_get_args();
+        switch ($reply[0]) {
 
-			for ($i = 1; $i < func_num_args(); $i ++)
-				$cmd_a[] = $args[$i];
-		}
+            case 'ok':
+                return $reply[1];
 
-		$reply = $this->exchange($cmd_a);
+            default:
+                return false;
+        }
+    }
 
-		switch ($reply[0]) {
+    public function fetch_array($res)
+    {
+        $reply = $this->exchange(array('fetch_array', $res));
 
-		case 'ok':
-			return $reply[1];
+        switch ($reply[0]) {
 
-		default:
-			return false;
-		}
-	}
+            case 'ok':
+                $row = array();
 
-	public function fetch_array($res) {
+                for ($i = 0; $i < $reply[1]; $i++) {
 
-		$reply = $this->exchange(array('fetch_array', $res));
+                    $col = $this->parse_reply($this->sock);
+                    $row[$col[0]] = $col[1];
+                }
 
-		switch ($reply[0]) {
+                return $row;
 
-		case 'ok':
-			$row = array();
+            default:
+                return false;
+        }
+    }
 
-			for ($i = 0; $i < $reply[1]; $i ++) {
+    public function free_result($res)
+    {
+        $reply = $this->exchange(array('free_result', $res));
 
-				$col = $this->parse_reply($this->sock);
-				$row[$col[0]] = $col[1];
-			}
+        switch ($reply[0]) {
 
-			return $row;
-
-		default:
-			return false;
-		}
-	}
-
-	public function free_result($res) {
-
-		$reply = $this->exchange(array('free_result', $res));
-
-		switch ($reply[0]) {
-
-		case 'ok':
-			return true;
-		default:
-			return false;
-		}
-	}
+            case 'ok':
+                return true;
+            default:
+                return false;
+        }
+    }
 }
-
-?>
