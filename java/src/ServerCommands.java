@@ -57,14 +57,13 @@ public class ServerCommands {
                 serverThread.write("ok");
                 
             } catch (SQLException ex) {
-               
-                Utils.log("error", "SQL exception encountered: " + ex.getMessage());           
-                serverThread.write("ex");
+
+                logSQLException(ex);
             }
             
         } else {
-            Utils.log("error", "Unexpected error encountered"); 
-            serverThread.write("err");
+
+            logUnexpectedError();
         }
     }
     
@@ -105,15 +104,13 @@ public class ServerCommands {
                 }
                 
             } catch (SQLException ex) {
-     
-                Utils.log("error", "SQL exception encountered: " + ex.getMessage());
-                serverThread.write("ex");
+
+                logSQLException(ex);
             }
             
         } else {
-           
-            Utils.log("error", "Unexpected error encountered");
-            serverThread.write("err");
+
+            logUnexpectedError();
         }
     }
     
@@ -147,21 +144,18 @@ public class ServerCommands {
                     }
                     
                 } catch (SQLException ex) {
-                   
-                    Utils.log("error", "SQL exception encountered: " + ex.getMessage());
-                    serverThread.write("ex");
+
+                    logSQLException(ex);
                 }
                 
             } else {
-               
-                Utils.log("error", "Unexpected error encountered");
-                serverThread.write("err");
+
+                logUnexpectedError();
             }
             
         } else {
-           
-            Utils.log("error", "Unexpected error encountered");
-            serverThread.write("err");
+
+            logUnexpectedError();
         }
     }
     
@@ -181,15 +175,13 @@ public class ServerCommands {
                 serverThread.write("ok");
                 
             } else {
-               
-                Utils.log("error", "Unexpected error encountered");
-                serverThread.write("err");
+
+                logUnexpectedError();
             }
             
         } else {
-           
-            Utils.log("error", "Unexpected error encountered");
-            serverThread.write("err");
+
+            logUnexpectedError();
         }
     }
     
@@ -209,5 +201,17 @@ public class ServerCommands {
                 Utils.log("error", "could not close JDBC connection");
             }
         }
+    }
+
+    private void logSQLException(SQLException ex) {
+        String msg = "SQL exception encountered: " + ex.getMessage();
+        Utils.log("error", msg);
+        serverThread.write("ex", msg);
+    }
+
+    private void logUnexpectedError() {
+        String msg = "Unexpected error encountered";
+        Utils.log("error", msg);
+        serverThread.write("err", msg);
     }
 }
