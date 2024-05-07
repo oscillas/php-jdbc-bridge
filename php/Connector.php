@@ -47,6 +47,9 @@ class Connector
         return $this->parse_reply();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function connect($url, $user, $pass)
     {
         $reply = $this->exchange(array('connect', $url, $user, $pass));
@@ -57,10 +60,13 @@ class Connector
                 return true;
 
             default:
-                return false;
+                $this->throwException($reply[1]);
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function exec($query)
     {
         $cmd_a = array('exec', $query);
@@ -81,10 +87,13 @@ class Connector
                 return $reply[1];
 
             default:
-                return false;
+                $this->throwException($reply[1]);
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function fetch_array($res)
     {
         $reply = $this->exchange(array('fetch_array', $res));
@@ -102,11 +111,17 @@ class Connector
 
                 return $row;
 
+            case 'end': // we've reached the end of the result set
+                return null;
+
             default:
-                return false;
+                $this->throwException($reply[1]);
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function free_result($res)
     {
         $reply = $this->exchange(array('free_result', $res));
@@ -116,7 +131,15 @@ class Connector
             case 'ok':
                 return true;
             default:
-                return false;
+                $this->throwException($reply[1]);
         }
+    }
+
+    /**
+     * @throws \Exception
+     */
+    private function throwException($message)
+    {
+        throw new \Exception($message);
     }
 }
