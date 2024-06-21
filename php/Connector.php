@@ -59,8 +59,12 @@ class Connector
             case 'ok':
                 return true;
 
-            default:
+            case 'err':
+            case 'ex':
                 $this->throwException($reply[1]);
+
+            default:
+                $this->throwException('Unexpected server error response');
         }
     }
 
@@ -86,8 +90,12 @@ class Connector
             case 'ok':
                 return $reply[1];
 
-            default:
+            case 'err':
+            case 'ex':
                 $this->throwException($reply[1]);
+
+            default:
+                $this->throwException('Unexpected server error response');
         }
     }
 
@@ -114,8 +122,12 @@ class Connector
             case 'end': // we've reached the end of the result set
                 return null;
 
-            default:
+            case 'err':
+            case 'ex':
                 $this->throwException($reply[1]);
+
+            default:
+                $this->throwException('Unexpected server error response');
         }
     }
 
@@ -130,8 +142,13 @@ class Connector
 
             case 'ok':
                 return true;
-            default:
+
+            case 'err':
+            case 'ex':
                 $this->throwException($reply[1]);
+
+            default:
+                $this->throwException('Unexpected server error response');
         }
     }
 
