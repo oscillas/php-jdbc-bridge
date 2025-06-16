@@ -7,14 +7,21 @@ class Connector
     private $sock;
     private $jdbc_enc;
     private $app_enc;
+    private $socketHandler;
 
     public $last_search_length = 0;
 
-    function __construct($host = "localhost", $port = "4444", $jdbc_enc = "ascii", $app_enc = "ascii")
+    function __construct($host = "localhost", $port = "4444", $jdbc_enc = "ascii", $app_enc = "ascii", ?callable $socketHandler = null)
     {
-        $this->sock = fsockopen($host, $port);
+        $this->socketHandler = $socketHandler ?? 'fsockopen';
         $this->jdbc_enc = $jdbc_enc;
         $this->app_enc = $app_enc;
+
+        $this->sock = call_user_func($this->socketHandler, $host, $port);
+
+        if ($this->sock === false) {
+            throw new \Exception("Failed to connect to {$host}:{$port}");
+        }
     }
 
     function __destruct()
